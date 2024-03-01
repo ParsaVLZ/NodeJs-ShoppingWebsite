@@ -93,19 +93,22 @@ module.exports = class Application {
     });
   }
   connectToMongoDB() {
-    mongoose.connect(this.#DB_URI, (error) => {
-      if (!error) return console.log("conected to MongoDB");
-      return console.log(error.message);
+    mongoose.connect(this.#DB_URI, {
+      // The following options are no longer needed and can be removed
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true
     });
-    mongoose.connection.on("connected", () => {
-      console.log("mongoose connected to DB");
+    const db = mongoose.connection;
+    db.on("error", console.error.bind(console, "connection error:"));
+    db.once("open", function() {
+      console.log("Connected to MongoDB");
     });
-    mongoose.connection.on("disconnected", () => {
-      console.log("mongoose connection is disconnected");
+    db.on("disconnected", () => {
+      console.log("Mongoose connection is disconnected");
     });
     process.on("SIGINT", async () => {
       await mongoose.connection.close();
-      console.log("disconnected");
+      console.log("Disconnected");
       process.exit(0);
     });
   }
